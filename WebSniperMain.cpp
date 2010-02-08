@@ -164,7 +164,7 @@ void WebSniperFrame::LoadSources()
        unsigned int linelen=1024;
        CountSources = 0;
 
-       while (GetNextLine(&aro,line,linelen) )
+       while (GetNextLineFile(&aro,line,linelen) )
       {
        state.Clear();
        state<<_U(line);
@@ -241,9 +241,7 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
 
     if ( !DownloadEnabled->IsChecked() )
      {
-       state<<wxT(" will not download ");
-       state<<sitename;
-       state<<wxT(" , downloads disabled\n ");
+       state<<wxT(" will not download ") , state<<sitename , state<<wxT(" , downloads disabled\n ");
        Output->AppendText(state);
        return;
      }
@@ -259,9 +257,7 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
     wxFileOutputStream outFile(filename);
     outFile.Write(*in);
 
-    state<<wxT("- Site `");
-    state<<sitename;
-    state<<wxT("` opened!\n");
+    state<<wxT("- Site `") ,  state<<sitename , state<<wxT("` opened!\n");
 
     Output->AppendText(state);
     PlaySound(wxT("load.wav"));
@@ -283,8 +279,11 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
     Output->AppendText(state);
 
     InputParser search_criteria;
+
     wxString sterm = SearchTerms->GetValue();
-    unsigned int sterm_count = search_criteria.SeperateWordsCC( sterm.mb_str(wxConvUTF8) );
+    unsigned int sterm_count = search_criteria.SeperateWordsCC(sterm.mb_str(wxConvUTF8));
+    char term_memory[1024];
+    unsigned int term_memory_length = 1024;
 
     state.Clear() , state<<wxT("A total of ");
     state<<sterm_count, state<<wxT(" search terms \n");
@@ -313,9 +312,7 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
     for ( int i=0; i<CountSources; i++ )
     {
       state.Clear();
-      state << wxT(" `");
-      state << Sources->GetString(i);
-      state << wxT("` ");
+      state << wxT(" `") , state << Sources->GetString(i) , state << wxT("` ");
 
       rawfile.Clear();
       rawfile<<wxT("raw/_rawfile");
@@ -342,10 +339,11 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
       unsigned int cur_occurances=0;
       unsigned int occurances[sterm_count+1];
       fprintf(stderr,"Checking out occurances on each of the %u terms of search supplied !\n",sterm_count);
-      for (unsigned int z=1; z<=sterm_count; z++)
+      for (unsigned int z=0; z<sterm_count; z++)
       {
-          fprintf(stderr,"Checking out %s ",search_criteria.GetMemory(z));
-          cur_occurances = site.WordOccurances(( unsigned char *) search_criteria.GetMemory(z) ,  search_criteria.GetMemoryLength(z));
+          search_criteria.GetWord(z,term_memory,term_memory_length);
+          fprintf(stderr,"Checking out %s ",term_memory);
+          cur_occurances = site.WordOccurances(( unsigned char *) term_memory ,  search_criteria.GetWordLength(z));
           occurances[z]=cur_occurances;
           if  ( cur_occurances > 0 ) ++total_keywords_present;
           fprintf(stderr,"Found in %u spots \n",cur_occurances);
@@ -358,13 +356,14 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
            state << wxT("Found Results at website ");
            state << Sources->GetString(i);
            state << wxT(" ( ");
-           for (unsigned int z=1; z<=sterm_count; z++)
+           for (unsigned int z=0; z<sterm_count; z++)
            {
              if ( occurances[z] > 0 )
              {
               state << occurances[z];
               state << wxT(" x ");
-              state << _U(search_criteria.GetMemory(z));
+              search_criteria.GetWord(z,term_memory,term_memory_length);
+              state << _U(term_memory);
               if ( z == sterm_count ) state << wxT(" "); else
                                       state << wxT(" , ");
              }
