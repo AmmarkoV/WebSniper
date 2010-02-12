@@ -64,6 +64,7 @@ const long WebSniperFrame::ID_STATICTEXT1 = wxNewId();
 const long WebSniperFrame::ID_STATICTEXT3 = wxNewId();
 const long WebSniperFrame::ID_CHECKBOX1 = wxNewId();
 const long WebSniperFrame::ID_CHECKBOX2 = wxNewId();
+const long WebSniperFrame::ID_CHECKBOX3 = wxNewId();
 const long WebSniperFrame::idMenuQuit = wxNewId();
 const long WebSniperFrame::idMenuAbout = wxNewId();
 const long WebSniperFrame::ID_STATUSBAR1 = wxNewId();
@@ -108,6 +109,8 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
     DownloadEnabled->SetValue(true);
     SoundOn = new wxCheckBox(this, ID_CHECKBOX2, _("Sound"), wxPoint(320,440), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
     SoundOn->SetValue(true);
+    ChangesOnly = new wxCheckBox(this, ID_CHECKBOX3, _("New Data Only"), wxPoint(176,440), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
+    ChangesOnly->SetValue(false);
     MenuBar1 = new wxMenuBar();
     Menu1 = new wxMenu();
     MenuItem1 = new wxMenuItem(Menu1, idMenuQuit, _("Quit\tAlt-F4"), _("Quit the application"), wxITEM_NORMAL);
@@ -222,6 +225,35 @@ void  WebSniperFrame::PlaySound(wxString sndname)
   }
 }
 
+void WebSniperFrame::CopyFile(wxString from,wxString to)
+{
+  wxString fullcmd;  fullcmd.Clear();
+  int linux_syntax;
+  #if defined(__WXMSW__)
+        linux_syntax=0;
+  #elif defined(__UNIX__)
+        linux_syntax=1;
+  #endif
+
+  if ( linux_syntax == 1 )
+  {
+   fullcmd.Clear();
+   fullcmd<<wxT("cp ");
+   fullcmd<<from;
+   fullcmd<<wxT(" ");
+   fullcmd<<to;
+   wxShell(fullcmd);
+  } else
+  {
+   fullcmd.Clear();
+   fullcmd<<wxT("copy ");
+   fullcmd<<from;
+   fullcmd<<wxT(" ");
+   fullcmd<<to;
+   wxShell(fullcmd);
+  }
+}
+
 void WebSniperFrame::OnQuit(wxCommandEvent& event)
 {
     Close();
@@ -270,7 +302,41 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
 }
 
 
+void WebSniperFrame::ReplaceDownloadedWithDiff(wxString oldfile,wxString newfile)
+{
+//diff _rawfile0 _rawfile0.orig > _rawfile_diff
+  wxString fullcmd;  fullcmd.Clear();
+  wxString diffedfile;  diffedfile.Clear();
+   diffedfile<<newfile;
+   diffedfile<<wxT("_diff");
 
+  int linux_syntax;
+  #if defined(__WXMSW__)
+        linux_syntax=0;
+  #elif defined(__UNIX__)
+        linux_syntax=1;
+  #endif
+
+  if ( linux_syntax == 1 )
+  {
+   fullcmd.Clear();
+   fullcmd<<wxT("diff ");
+   fullcmd<<oldfile;
+   fullcmd<<wxT(" ");
+   fullcmd<<newfile;
+   fullcmd<<wxT(" > ");
+   fullcmd<<diffedfile;
+   //wxMessageBox(fullcmd, _("WebSniper! :) "));
+   wxShell(fullcmd);
+   //wxMessageBox(_("Done"), _("WebSniper! :) "));
+  } else
+  {
+    fprintf(stderr,"Unable to get new differences for windows :( \n");
+  }
+
+
+  CopyFile(diffedfile,newfile);
+}
 
 void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
 {
@@ -302,6 +368,8 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
     }
 
     wxString rawfile;
+    wxString curr_rawfile;
+    wxString last_rawfile;
     wxString cleanrawfile;
     char rawfile_s[256];
     char cleanrawfile_s[256];
@@ -314,13 +382,16 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
       state.Clear();
       state << wxT(" `") , state << Sources->GetString(i) , state << wxT("` ");
 
-      rawfile.Clear();
-      rawfile<<wxT("raw/_rawfile");
-      rawfile<<i;
+      rawfile.Clear() , rawfile<<wxT("raw/_rawfile") , rawfile<<i;
+      curr_rawfile.Clear() , curr_rawfile<<rawfile , curr_rawfile<<wxT(".current");
 
-      cleanrawfile << rawfile;
-      cleanrawfile << wxT(".clean");
+      last_rawfile.Clear() , last_rawfile << rawfile , last_rawfile << wxT(".last");
+      cleanrawfile.Clear() , cleanrawfile << rawfile , cleanrawfile << wxT(".clean");
+
+      CopyFile(curr_rawfile,last_rawfile);
       DownloadSite(Sources->GetString(i),rawfile);
+      CopyFile(rawfile,curr_rawfile);
+      if ( ChangesOnly->IsChecked() ) {  ReplaceDownloadedWithDiff(last_rawfile,rawfile);  }
 
       state << wxT(" stored to ");
       state << rawfile;

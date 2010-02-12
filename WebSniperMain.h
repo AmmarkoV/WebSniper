@@ -29,8 +29,9 @@ class WebSniperFrame: public wxFrame
         WebSniperFrame(wxWindow* parent,wxWindowID id = -1);
         virtual ~WebSniperFrame();
         void LoadSources();
-        void  PlaySound(wxString sndname);
-
+        void PlaySound(wxString sndname);
+        void CopyFile(wxString from,wxString to);
+        void ReplaceDownloadedWithDiff(wxString oldfile,wxString newfile);
     private:
 
         //(*Handlers(WebSniperFrame)
@@ -59,12 +60,14 @@ class WebSniperFrame: public wxFrame
         static const long ID_STATICTEXT3;
         static const long ID_CHECKBOX1;
         static const long ID_CHECKBOX2;
+        static const long ID_CHECKBOX3;
         static const long idMenuQuit;
         static const long idMenuAbout;
         static const long ID_STATUSBAR1;
         //*)
 
         //(*Declarations(WebSniperFrame)
+        wxCheckBox* ChangesOnly;
         wxTextCtrl* Output;
         wxStatusBar* StatusBar1;
         wxButton* SaveButton;
