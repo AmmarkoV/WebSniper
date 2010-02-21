@@ -41,6 +41,7 @@ class WebSniperFrame: public wxFrame
         void OnMailButtonClick(wxCommandEvent& event);
         void OnAddWebsiteClick(wxCommandEvent& event);
         void OnRemWebsiteClick(wxCommandEvent& event);
+        void OnSaveButtonClick(wxCommandEvent& event);
         //*)
         void DownloadSite(wxString sitename,wxString filename);
 

@@ -4,7 +4,7 @@
 
 HTMLAnalyzer::HTMLAnalyzer(unsigned char * file,unsigned char * file2)
 {
-
+  fprintf(stderr,"Allocating new HTMLAnalyzer\n");
   filename = file;
   filenameclean = file2;
 
@@ -36,6 +36,7 @@ HTMLAnalyzer::HTMLAnalyzer(unsigned char * file,unsigned char * file2)
     return;
   }
 
+  fprintf(stderr,"Allocated new HTMLAnalyzer\n");
   /* FILE INPUT */
 }
 
@@ -61,6 +62,7 @@ unsigned int HTMLAnalyzer::WordOccurances(unsigned char * str , unsigned short l
 HTMLAnalyzer::~HTMLAnalyzer()
 {
   TextAnalyzer_DeleteWordCollection(html_words);
-
+  fprintf(stderr,"Survived Delete Word Collection\n");
   if ( buffer!= 0 )  free (buffer);
+  fprintf(stderr,"Survived buffer free\n");
 }

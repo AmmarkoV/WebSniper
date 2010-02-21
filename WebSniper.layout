@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="HTMLAnalyzer.cpp" open="1" top="1" tabpos="3">
-		<Cursor position="1924" topLine="0" />
+	<File name="HTMLAnalyzer.cpp" open="1" top="0" tabpos="3">
+		<Cursor position="301" topLine="30" />
 	</File>
 	<File name="HTMLAnalyzer.h" open="1" top="0" tabpos="4">
 		<Cursor position="599" topLine="0" />
 	</File>
-	<File name="WebSniperMain.cpp" open="1" top="0" tabpos="1">
-		<Cursor position="7088" topLine="369" />
+	<File name="WebSniperMain.cpp" open="1" top="1" tabpos="1">
+		<Cursor position="7965" topLine="201" />
 	</File>
 	<File name="WebSniperMain.h" open="1" top="0" tabpos="2">
-		<Cursor position="849" topLine="19" />
+		<Cursor position="1002" topLine="19" />
 	</File>
 </CodeBlocks_layout_file>

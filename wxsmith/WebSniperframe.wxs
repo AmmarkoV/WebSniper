@@ -58,6 +58,7 @@
 			<label>Save Results</label>
 			<pos>576,464</pos>
 			<size>104,24</size>
+			<handler function="OnSaveButtonClick" entry="EVT_BUTTON" />
 		</object>
 		<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText2" member="yes">
 			<label>Search Criteria</label>
