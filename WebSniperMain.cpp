@@ -17,7 +17,9 @@
 #include "../InputParser/InputParser.h"
 #include "../AFScripts/AFScripts.h"
 #include "GenerateReport.h"
-
+#include <wx/html/htmlwin.h>
+#include <wx/sizer.h>
+#include <wx/dialog.h>
 
 //(*InternalHeaders(WebSniperFrame)
 #include <wx/string.h>
@@ -61,12 +63,12 @@ const long WebSniperFrame::ID_BUTTON3 = wxNewId();
 const long WebSniperFrame::ID_GAUGE1 = wxNewId();
 const long WebSniperFrame::ID_STATICTEXT2 = wxNewId();
 const long WebSniperFrame::ID_BUTTON4 = wxNewId();
-const long WebSniperFrame::ID_BUTTON5 = wxNewId();
 const long WebSniperFrame::ID_STATICTEXT1 = wxNewId();
 const long WebSniperFrame::ID_STATICTEXT3 = wxNewId();
 const long WebSniperFrame::ID_CHECKBOX1 = wxNewId();
 const long WebSniperFrame::ID_CHECKBOX2 = wxNewId();
 const long WebSniperFrame::ID_CHECKBOX3 = wxNewId();
+const long WebSniperFrame::ID_BUTTON5 = wxNewId();
 const long WebSniperFrame::idMenuQuit = wxNewId();
 const long WebSniperFrame::idMenuAbout = wxNewId();
 const long WebSniperFrame::ID_STATUSBAR1 = wxNewId();
@@ -77,11 +79,187 @@ BEGIN_EVENT_TABLE(WebSniperFrame,wxFrame)
     //*)
 END_EVENT_TABLE()
 
+/*
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+              HELPER FUNCTIONS START
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+*/
 inline wxString _U(const char String[] = "")
 {
   return wxString(String, wxConvUTF8);
 }
+
+
+
+void WebSniperFrame::MessageCstr(char * msg)
+{
+    fprintf(stderr,"%s",msg);
+    wxString wxmsgstr; wxmsgstr.clear();
+    wxmsgstr<<_U(msg);
+    Output->AppendText(wxmsgstr);
+
+}
+
+void  WebSniperFrame::PlaySound(wxString sndname)
+{
+
+  if ( !SoundOn->IsChecked() ) { return; }
+
+  wxString fullcmd;  fullcmd.Clear();
+  wxString fileused;  fileused.Clear();
+  fileused<<wxT("Sounds/");
+  fileused<<sndname;
+  int linux_sound;
+
+  #if defined(__WXMSW__)
+        linux_sound=0;
+  #elif defined(__UNIX__)
+        linux_sound=1;
+  #endif
+
+  if ( linux_sound == 1 )
+  {
+   // aplay Sound/filename
+   fullcmd<<wxT("aplay "); fullcmd<<fileused;
+   if ( FileExists(fileused) ) { wxExecute(fullcmd); }
+  } else
+  {
+   wxSound newsound(fileused);
+   if ( newsound.IsOk() )
+    {
+      if ( newsound.Play(wxSOUND_ASYNC) )
+      { /* OK */  } else
+      { /*ERROR*/ }
+    } else
+    { /*ERROR*/ }
+  }
+}
+
+int _C_FileCopy(char * frompath,char * topath)
+{
+  FILE * pFile;
+  long lSize=0;
+  char * buffer;
+  int result;
+  // READ FROMPATH
+  // -----------------------------------
+   pFile = fopen ( frompath , "rb" );
+   if (pFile==0) { return 0; }
+   // obtain file size:
+    fseek (pFile , 0 , SEEK_END);
+    lSize = ftell (pFile);
+    rewind (pFile);
+   // allocate memory to contain the whole file:
+   buffer = (char*) malloc (sizeof(char)*lSize);
+   if (buffer == 0 ) { return 0; }
+
+   result = fread (buffer,1,lSize,pFile);
+   fclose (pFile);
+   // -----------------------------------
+
+  // WRITE TOPATH
+  // -----------------------------------
+   pFile = fopen ( topath , "wb" );
+   if (pFile==0) { free ( buffer ); return 0; }
+   fwrite (buffer,1,lSize,pFile);
+   fclose (pFile);
+  // -----------------------------------
+
+   free ( buffer );
+
+  return 1;
+}
+
+
+void WebSniperFrame::MyCopyFile(wxString from,wxString to)
+{
+  wxString fullcmd;  fullcmd.Clear();
+
+
+  int linux_syntax;
+  #if defined(__WXMSW__)
+        linux_syntax=0;
+  #elif defined(__UNIX__)
+        linux_syntax=1;
+  #endif
+
+  // ACTIVATE INLINE FILE COPYING ( NO CONSOLE WINDOW IN WINDOWS :P )
+  linux_syntax=2;
+
+  if ( linux_syntax == 1 )
+  {
+   fullcmd.Clear();
+   fullcmd<<wxT("cp "); fullcmd<<from; fullcmd<<wxT(" "); fullcmd<<to;
+   if ( FileExists(from) ) { wxShell(fullcmd); }
+  } else
+  if ( linux_syntax == 0 )
+  {
+   fullcmd.Clear();
+   fullcmd<<wxT("copy "); fullcmd<<from; fullcmd<<wxT(" "); fullcmd<<to;
+   if ( FileExists(from) ) { wxShell(fullcmd); }
+  } else
+  {
+     // C COPY FILE IMPLEMENTATION!
+     char frompath[1024]={0};
+     strcpy(frompath, (const char*) from.mb_str(wxConvUTF8) );
+     char topath[1024]={0};
+     strcpy(topath, (const char*) to.mb_str(wxConvUTF8) );
+
+     if ( _C_FileCopy(frompath,topath)!= 1 )
+      {
+         MessageCstr("Error Copying File!\n");
+      }
+  }
+}
+
+
+
+void WebSniperFrame::ReplaceDownloadedWithDiff(wxString oldfile,wxString newfile)
+{
+  wxString fullcmd;  fullcmd.Clear();
+  wxString diffedfile;  diffedfile.Clear();
+  diffedfile<<newfile;
+  diffedfile<<wxT("_diff");
+
+  int linux_syntax;
+  #if defined(__WXMSW__)
+        linux_syntax=0;
+  #elif defined(__UNIX__)
+        linux_syntax=1;
+  #endif
+
+  if ( linux_syntax == 1 )
+  {
+   //diff _rawfile0 _rawfile0.orig > _rawfile_diff
+   fullcmd.Clear(); fullcmd<<wxT("diff "); fullcmd<<oldfile; fullcmd<<wxT(" "); fullcmd<<newfile; fullcmd<<wxT(" > "); fullcmd<<diffedfile;
+   if ( FileExists(oldfile)&&FileExists(newfile) ) { wxShell(fullcmd); }
+  } else
+  {
+    fprintf(stderr,"Unable to get new differences for windows :( \n");
+  }
+
+
+  MyCopyFile(diffedfile,newfile);
+}
+/*
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+              HELPER FUNCTIONS END
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+*/
+
+
 
 WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
 {
@@ -104,7 +282,6 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
     ProgressBar = new wxGauge(this, ID_GAUGE1, 100, wxPoint(0,464), wxSize(384,24), 0, wxDefaultValidator, _T("ID_GAUGE1"));
     StaticText1 = new wxStaticText(this, ID_STATICTEXT2, _("Websites to include :"), wxPoint(520,8), wxDefaultSize, 0, _T("ID_STATICTEXT2"));
     MailButton = new wxButton(this, ID_BUTTON4, _("Mail Results"), wxPoint(576,440), wxSize(104,24), 0, wxDefaultValidator, _T("ID_BUTTON4"));
-    SaveButton = new wxButton(this, ID_BUTTON5, _("Save Results"), wxPoint(576,464), wxSize(104,24), 0, wxDefaultValidator, _T("ID_BUTTON5"));
     StaticText2 = new wxStaticText(this, ID_STATICTEXT1, _("Search Criteria"), wxPoint(8,384), wxDefaultSize, 0, _T("ID_STATICTEXT1"));
     StaticText3 = new wxStaticText(this, ID_STATICTEXT3, _("Progress : "), wxPoint(8,8), wxDefaultSize, 0, _T("ID_STATICTEXT3"));
     DownloadEnabled = new wxCheckBox(this, ID_CHECKBOX1, _("Download Live Data"), wxPoint(0,440), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
@@ -113,6 +290,7 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
     SoundOn->SetValue(true);
     ChangesOnly = new wxCheckBox(this, ID_CHECKBOX3, _("New Data Only"), wxPoint(176,440), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
     ChangesOnly->SetValue(false);
+    SeeButton = new wxButton(this, ID_BUTTON5, _("See Results"), wxPoint(576,464), wxSize(104,24), 0, wxDefaultValidator, _T("ID_BUTTON5"));
     MenuBar1 = new wxMenuBar();
     Menu1 = new wxMenu();
     MenuItem1 = new wxMenuItem(Menu1, idMenuQuit, _("Quit\tAlt-F4"), _("Quit the application"), wxITEM_NORMAL);
@@ -134,7 +312,7 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_BUTTON2,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnRemWebsiteClick);
     Connect(ID_BUTTON3,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnSearchButtonClick);
     Connect(ID_BUTTON4,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnMailButtonClick);
-    Connect(ID_BUTTON5,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnSaveButtonClick);
+    Connect(ID_BUTTON5,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnSeeButtonClick);
     Connect(idMenuQuit,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&WebSniperFrame::OnQuit);
     Connect(idMenuAbout,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&WebSniperFrame::OnAbout);
     //*)
@@ -164,89 +342,35 @@ void WebSniperFrame::LoadSources()
     struct AFSContext aro;
 
     state.Clear();
+
     if ( StartParsingFile (&aro ,"sources.ini\0") )
     {
-       char  line[1024];
+       char  line[1024]={0};
        unsigned int linelen=1024;
        CountSources = 0;
 
        while (GetNextLineFile(&aro,line,linelen) )
       {
-       state.Clear();
-       state<<_U(line);
+       state.Clear(); state<<_U(line);
        if ( state.Length() >=6 )
         {
-         Sources->InsertItems(1,&state,0);
-         ++CountSources;
+          Sources->InsertItems(1,&state,0);
+          ++CountSources;
         }
       }
 
-    StopParsingFile (&aro);
+      StopParsingFile (&aro);
     } else
     {
-      state<<wxT("Failed Parsing Sources File..!");
+      state<<wxT("Failed Parsing Sources File..!\n");
+      state<<wxT("Check file sources.ini");
       Output->AppendText(state);
     }
 
     fprintf(stderr,"Source read Done \n");
 }
 
-void  WebSniperFrame::PlaySound(wxString sndname)
-{
 
-  if ( !SoundOn->IsChecked() ) { return; }
-
-  wxString fullcmd;  fullcmd.Clear();
-  int linux_sound;
-
-  #if defined(__WXMSW__)
-        linux_sound=0;
-  #elif defined(__UNIX__)
-        linux_sound=1;
-  #endif
-
-  if ( linux_sound == 1 )
-  {
-   fullcmd<<wxT("aplay Sounds/"); fullcmd<<sndname;
-   wxExecute(fullcmd);
-  } else
-  {
-   fullcmd<<wxT("Sounds/"); fullcmd<<sndname;
-   wxSound newsound(fullcmd);
-   if ( newsound.IsOk() )
-    {
-      if ( newsound.Play(wxSOUND_ASYNC) )
-      {
-        // SOUND OK!
-      } else
-      { /*ERROR*/ }
-    } else
-    { /*ERROR*/ }
-  }
-}
-
-void WebSniperFrame::CopyFile(wxString from,wxString to)
-{
-  wxString fullcmd;  fullcmd.Clear();
-  int linux_syntax;
-  #if defined(__WXMSW__)
-        linux_syntax=0;
-  #elif defined(__UNIX__)
-        linux_syntax=1;
-  #endif
-
-  if ( linux_syntax == 1 )
-  {
-   fullcmd.Clear();
-   fullcmd<<wxT("cp "); fullcmd<<from; fullcmd<<wxT(" "); fullcmd<<to;
-   wxShell(fullcmd);
-  } else
-  {
-   fullcmd.Clear();
-   fullcmd<<wxT("copy "); fullcmd<<from; fullcmd<<wxT(" "); fullcmd<<to;
-   wxShell(fullcmd);
-  }
-}
 
 void WebSniperFrame::OnQuit(wxCommandEvent& event)
 {
@@ -273,12 +397,11 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
      }
 
     wxURL *http=0;
-    fprintf(stderr,"Creating new URL downloader\n");
     http = new wxURL(sitename);
+   if ( http == 0 ) { MessageCstr("Error Creating URL downloader \n"); }
+     else
    if (http->GetError() == wxURL_NOERR)
   {
-
-
     fprintf(stderr,"Fetching Input Stream\n");
     wxInputStream* in = http->GetInputStream();
 
@@ -300,49 +423,12 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
     delete in;
   } else
   {
-    fprintf(stderr,"Site could not be opened!\n");
-    state<<wxT("Site could not be opened!\n");
-    Output->AppendText(state);
+    MessageCstr("Site could not be opened!\n");
   }
-
-  fprintf(stderr,"Deleting URL downloader\n");
   delete http;
 }
 
 
-void WebSniperFrame::ReplaceDownloadedWithDiff(wxString oldfile,wxString newfile)
-{
-//diff _rawfile0 _rawfile0.orig > _rawfile_diff
-  wxString fullcmd;  fullcmd.Clear();
-  wxString diffedfile;  diffedfile.Clear();
-   diffedfile<<newfile;
-   diffedfile<<wxT("_diff");
-
-  int linux_syntax;
-  #if defined(__WXMSW__)
-        linux_syntax=0;
-  #elif defined(__UNIX__)
-        linux_syntax=1;
-  #endif
-
-  if ( linux_syntax == 1 )
-  {
-   fullcmd.Clear();
-   fullcmd<<wxT("diff ");
-   fullcmd<<oldfile;
-   fullcmd<<wxT(" ");
-   fullcmd<<newfile;
-   fullcmd<<wxT(" > ");
-   fullcmd<<diffedfile;
-   wxShell(fullcmd);
-  } else
-  {
-    fprintf(stderr,"Unable to get new differences for windows :( \n");
-  }
-
-
-  CopyFile(diffedfile,newfile);
-}
 
 void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
 {
@@ -354,7 +440,7 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
 
     wxString sterm = SearchTerms->GetValue();
     unsigned int sterm_count = search_criteria.SeperateWordsCC(sterm.mb_str(wxConvUTF8));
-    char term_memory[1024];
+    char term_memory[1024]={0};
     unsigned int term_memory_length = 1024;
 
     state.Clear() , state<<wxT("A total of ");
@@ -403,11 +489,11 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
       cleanrawfile.Clear() , cleanrawfile << rawfile , cleanrawfile << wxT(".clean");
 
       fprintf(stderr,"Copying File\n",i);
-      CopyFile(curr_rawfile,last_rawfile);
+      MyCopyFile(curr_rawfile,last_rawfile);
       fprintf(stderr,"Downloading Site\n",i);
       DownloadSite(Sources->GetString(i),rawfile);
       fprintf(stderr,"Copying File\n",i);
-      CopyFile(rawfile,curr_rawfile);
+      MyCopyFile(rawfile,curr_rawfile);
       if ( ChangesOnly->IsChecked() ) {  fprintf(stderr,"ReplaceDownloadedWithDiff\n",i);
                                           ReplaceDownloadedWithDiff(last_rawfile,rawfile);  }
 
@@ -419,7 +505,10 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
       fprintf(stderr,"Reading rawfile %s !\n",rawfile_s);
       site = new HTMLAnalyzer((unsigned char *) rawfile_s,(unsigned char *) cleanrawfile_s);
       fprintf(stderr,"Cleaning HTML Tags !\n");
-      site->CleanHTMLTags();
+
+      char clean_file_cstr[512]={0};
+      strcpy(clean_file_cstr,cleanrawfile.mb_str(wxConvUTF8));
+      site->CleanHTMLTags(clean_file_cstr);
 
       total_keywords_present=0;
       unsigned int cur_occurances=0;
@@ -478,14 +567,45 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
 
 void WebSniperFrame::OnMailButtonClick(wxCommandEvent& event)
 {
+       #if defined(__WXMSW__)
+       wxMessageBox(wxT("Function not implemented in Windows , please send the generated file in Reports folder manually"),wxT("WebSniper"));
+       #elif defined(__UNIX__)
+       wxMessageBox(wxT("Function not implemented in Linux , please send the generated file in Reports folder manually"),wxT("WebSniper"));
+      #endif
+}
 
+
+
+void WebSniperFrame::OnSeeButtonClick(wxCommandEvent& event)
+{
+
+  if ( FileExists(wxT("Reports/report.html") ) )
+  {
+
+    wxBoxSizer* topsizer;
+    wxDialog dlg(this,wxID_ANY,wxString(_("Generated Results")));
+    wxHtmlWindow * html;
+    topsizer = new wxBoxSizer(wxVERTICAL);
+
+    html = new wxHtmlWindow(&dlg,wxID_ANY,wxDefaultPosition,wxSize(600,400),wxHW_SCROLLBAR_AUTO );
+    html ->LoadPage(wxT("Reports/report.html"));
+    html ->SetSize(590,390);
+    topsizer->Add(html,1,wxALL,10);
+    wxButton *but = new wxButton(&dlg,wxID_OK,wxT("OK"));
+    but->SetDefault();
+    topsizer->Add(but,0,wxALL|wxALIGN_RIGHT,15);
+
+    dlg.SetSizer(topsizer);
+    topsizer->Fit(&dlg);
+    dlg.ShowModal();
+
+  }
 }
 
 void WebSniperFrame::OnAddWebsiteClick(wxCommandEvent& event)
 {
     wxString tmpstr = Website->GetValue();
     Sources->InsertItems(1,&tmpstr,0);
-
     tmpstr.Clear();
     Website->SetValue(tmpstr);
 }
@@ -501,7 +621,4 @@ void WebSniperFrame::OnRemWebsiteClick(wxCommandEvent& event)
   }
 }
 
-void WebSniperFrame::OnSaveButtonClick(wxCommandEvent& event)
-{
 
-}

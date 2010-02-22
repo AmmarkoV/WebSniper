@@ -29,8 +29,9 @@ class WebSniperFrame: public wxFrame
         WebSniperFrame(wxWindow* parent,wxWindowID id = -1);
         virtual ~WebSniperFrame();
         void LoadSources();
+        void MessageCstr(char * msg);
         void PlaySound(wxString sndname);
-        void CopyFile(wxString from,wxString to);
+        void MyCopyFile(wxString from,wxString to);
         void ReplaceDownloadedWithDiff(wxString oldfile,wxString newfile);
     private:
 
@@ -41,7 +42,7 @@ class WebSniperFrame: public wxFrame
         void OnMailButtonClick(wxCommandEvent& event);
         void OnAddWebsiteClick(wxCommandEvent& event);
         void OnRemWebsiteClick(wxCommandEvent& event);
-        void OnSaveButtonClick(wxCommandEvent& event);
+        void OnSeeButtonClick(wxCommandEvent& event);
         //*)
         void DownloadSite(wxString sitename,wxString filename);
 
@@ -56,12 +57,12 @@ class WebSniperFrame: public wxFrame
         static const long ID_GAUGE1;
         static const long ID_STATICTEXT2;
         static const long ID_BUTTON4;
-        static const long ID_BUTTON5;
         static const long ID_STATICTEXT1;
         static const long ID_STATICTEXT3;
         static const long ID_CHECKBOX1;
         static const long ID_CHECKBOX2;
         static const long ID_CHECKBOX3;
+        static const long ID_BUTTON5;
         static const long idMenuQuit;
         static const long idMenuAbout;
         static const long ID_STATUSBAR1;
@@ -71,9 +72,9 @@ class WebSniperFrame: public wxFrame
         wxCheckBox* ChangesOnly;
         wxTextCtrl* Output;
         wxStatusBar* StatusBar1;
-        wxButton* SaveButton;
         wxButton* RemWebsite;
         wxStaticText* StaticText1;
+        wxButton* SeeButton;
         wxStaticText* StaticText3;
         wxButton* MailButton;
         wxCheckBox* DownloadEnabled;

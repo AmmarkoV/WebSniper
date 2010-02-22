@@ -54,12 +54,6 @@
 			<size>104,24</size>
 			<handler function="OnMailButtonClick" entry="EVT_BUTTON" />
 		</object>
-		<object class="wxButton" name="ID_BUTTON5" variable="SaveButton" member="yes">
-			<label>Save Results</label>
-			<pos>576,464</pos>
-			<size>104,24</size>
-			<handler function="OnSaveButtonClick" entry="EVT_BUTTON" />
-		</object>
 		<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText2" member="yes">
 			<label>Search Criteria</label>
 			<pos>8,384</pos>
@@ -81,6 +75,12 @@
 		<object class="wxCheckBox" name="ID_CHECKBOX3" variable="ChangesOnly" member="yes">
 			<label>New Data Only</label>
 			<pos>176,440</pos>
+		</object>
+		<object class="wxButton" name="ID_BUTTON5" variable="SeeButton" member="yes">
+			<label>See Results</label>
+			<pos>576,464</pos>
+			<size>104,24</size>
+			<handler function="OnSeeButtonClick" entry="EVT_BUTTON" />
 		</object>
 		<object class="wxMenuBar" variable="MenuBar1" member="no">
 			<object class="wxMenu" variable="Menu1" member="no">

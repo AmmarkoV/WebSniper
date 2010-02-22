@@ -3,7 +3,7 @@
 
 #include <wx/listbox.h>
 
-
+unsigned int FileExists(wxString filename);
 void WriteReportHeader(char * filename ,int live,int keynum,const char * keyword ,int sourcecount, wxListBox * Sources);
 void AddReportData(wxString keyword ,wxString docurl,unsigned int doc_id);
 void CloseReport();

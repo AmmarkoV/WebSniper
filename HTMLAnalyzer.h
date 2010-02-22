@@ -12,7 +12,7 @@ class HTMLAnalyzer
         HTMLAnalyzer(unsigned char * file,unsigned char * file2);
         virtual ~HTMLAnalyzer();
 
-        void CleanHTMLTags();
+        void CleanHTMLTags(char * filenameclean);
         unsigned int WordOccurances(unsigned char * str , unsigned short length);
     protected:
     private:

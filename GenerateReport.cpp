@@ -6,6 +6,20 @@
 FILE* fp=0;
 int adds_called=0;
 
+unsigned int FileExists(wxString filename)
+{
+    if (filename.Length()>=1024) { return 0; }
+    char filename_cstr[1024]={0};
+    strcpy(filename_cstr,filename.mb_str(wxConvUTF8));
+    FILE* fp_tester=0;
+    fp_tester = fopen(filename_cstr,"r");
+    if (fp_tester == 0) { fprintf(stderr,"File %s not found \n",filename_cstr); return 0; }
+    fclose(fp_tester);
+    fprintf(stderr,"File %s exists \n",filename_cstr);
+    return 1;
+}
+
+
 void WriteReportHeader(char * filename ,int live , int keynum,const char * keyword ,int sourcecount, wxListBox * Sources)
 {
    fp = fopen(filename,"w");
@@ -19,7 +33,7 @@ void WriteReportHeader(char * filename ,int live , int keynum,const char * keywo
    if ( live ==0 ) fprintf(fp,"<h4>Results from the website cache</h4>\n");
 
 
-   fprintf(fp,"<center><table border=0 width=98\% >");
+   fprintf(fp,"<center><table border=0 width=98%% >");
    wxString state;
    char sourcetmp[2048]={0};
    for ( int i=0; i<sourcecount; i++)
@@ -40,7 +54,7 @@ void WriteReportHeader(char * filename ,int live , int keynum,const char * keywo
 
   fprintf(fp,"<h4>Relevant Keywords for Websites</h4><br><br>\n");
 
-  fprintf(fp,"<center><table border=0 width=98\% >");
+  fprintf(fp,"<center><table border=0 width=98%% >");
 }
 
 void AddReportData(wxString keyword ,wxString docurl,unsigned int doc_id)

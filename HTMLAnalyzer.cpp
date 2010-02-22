@@ -41,16 +41,18 @@ HTMLAnalyzer::HTMLAnalyzer(unsigned char * file,unsigned char * file2)
 }
 
 
-void HTMLAnalyzer::CleanHTMLTags()
+void HTMLAnalyzer::CleanHTMLTags(char * filenameclean)
 {
    if ( failed_instance == true ) { fprintf(stderr,"Error cleaning HTML tags.. \n"); return; }
    unsigned int sizeofbuffer=lSize;
    ClearTextFromHTMLTags(html_words,buffer,sizeofbuffer);
- //  pFile = fopen ( (const char * ) filenameclean , "wb" );
- //  if (pFile==NULL) { fputs ("HTMLAnalyzer cannot find clean file :S\n",stderr); failed_instance = true; return; }
- //  fwrite (buffer,1,sizeofbuffer,pFile);
- //  fclose (pFile);
- //  pFile=0;
+
+   FILE *fp_dbg;
+   fp_dbg = fopen ( (const char * ) filenameclean , "wb" );
+   if (fp_dbg==NULL) {  return; }
+   fwrite (buffer,1,sizeofbuffer,fp_dbg);
+   fclose (fp_dbg);
+   fp_dbg=0;
 }
 
 unsigned int HTMLAnalyzer::WordOccurances(unsigned char * str , unsigned short length)
