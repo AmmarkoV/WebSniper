@@ -43,6 +43,7 @@ class WebSniperFrame: public wxFrame
         void OnAddWebsiteClick(wxCommandEvent& event);
         void OnRemWebsiteClick(wxCommandEvent& event);
         void OnSeeButtonClick(wxCommandEvent& event);
+        void OnStopClick(wxCommandEvent& event);
         //*)
         void DownloadSite(wxString sitename,wxString filename);
 
@@ -63,6 +64,7 @@ class WebSniperFrame: public wxFrame
         static const long ID_CHECKBOX2;
         static const long ID_CHECKBOX3;
         static const long ID_BUTTON5;
+        static const long ID_BUTTON6;
         static const long idMenuQuit;
         static const long idMenuAbout;
         static const long ID_STATUSBAR1;
@@ -73,6 +75,7 @@ class WebSniperFrame: public wxFrame
         wxTextCtrl* Output;
         wxStatusBar* StatusBar1;
         wxButton* RemWebsite;
+        wxButton* Stop;
         wxStaticText* StaticText1;
         wxButton* SeeButton;
         wxStaticText* StaticText3;
@@ -89,7 +92,7 @@ class WebSniperFrame: public wxFrame
         //*)
 
         unsigned int CountSources;
-
+        unsigned int StopEnabled;
         DECLARE_EVENT_TABLE()
 };
 

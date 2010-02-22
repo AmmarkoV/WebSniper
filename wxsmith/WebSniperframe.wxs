@@ -37,7 +37,7 @@
 		<object class="wxButton" name="ID_BUTTON3" variable="SearchButton" member="yes">
 			<label>Search</label>
 			<pos>392,440</pos>
-			<size>184,48</size>
+			<size>160,48</size>
 			<handler function="OnSearchButtonClick" entry="EVT_BUTTON" />
 		</object>
 		<object class="wxGauge" name="ID_GAUGE1" variable="ProgressBar" member="yes">
@@ -81,6 +81,12 @@
 			<pos>576,464</pos>
 			<size>104,24</size>
 			<handler function="OnSeeButtonClick" entry="EVT_BUTTON" />
+		</object>
+		<object class="wxButton" name="ID_BUTTON6" variable="Stop" member="yes">
+			<label>S</label>
+			<pos>552,440</pos>
+			<size>24,48</size>
+			<handler function="OnStopClick" entry="EVT_BUTTON" />
 		</object>
 		<object class="wxMenuBar" variable="MenuBar1" member="no">
 			<object class="wxMenu" variable="Menu1" member="no">

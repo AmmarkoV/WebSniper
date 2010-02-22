@@ -69,6 +69,7 @@ const long WebSniperFrame::ID_CHECKBOX1 = wxNewId();
 const long WebSniperFrame::ID_CHECKBOX2 = wxNewId();
 const long WebSniperFrame::ID_CHECKBOX3 = wxNewId();
 const long WebSniperFrame::ID_BUTTON5 = wxNewId();
+const long WebSniperFrame::ID_BUTTON6 = wxNewId();
 const long WebSniperFrame::idMenuQuit = wxNewId();
 const long WebSniperFrame::idMenuAbout = wxNewId();
 const long WebSniperFrame::ID_STATUSBAR1 = wxNewId();
@@ -278,7 +279,7 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
     RemWebsite = new wxButton(this, ID_BUTTON2, _("-"), wxPoint(656,344), wxSize(24,24), 0, wxDefaultValidator, _T("ID_BUTTON2"));
     Output = new wxTextCtrl(this, ID_TEXTCTRL2, wxEmptyString, wxPoint(0,32), wxSize(512,336), wxTE_MULTILINE|wxTE_READONLY, wxDefaultValidator, _T("ID_TEXTCTRL2"));
     SearchTerms = new wxTextCtrl(this, ID_TEXTCTRL3, wxEmptyString, wxPoint(0,408), wxSize(680,27), wxTE_PROCESS_ENTER, wxDefaultValidator, _T("ID_TEXTCTRL3"));
-    SearchButton = new wxButton(this, ID_BUTTON3, _("Search"), wxPoint(392,440), wxSize(184,48), 0, wxDefaultValidator, _T("ID_BUTTON3"));
+    SearchButton = new wxButton(this, ID_BUTTON3, _("Search"), wxPoint(392,440), wxSize(160,48), 0, wxDefaultValidator, _T("ID_BUTTON3"));
     ProgressBar = new wxGauge(this, ID_GAUGE1, 100, wxPoint(0,464), wxSize(384,24), 0, wxDefaultValidator, _T("ID_GAUGE1"));
     StaticText1 = new wxStaticText(this, ID_STATICTEXT2, _("Websites to include :"), wxPoint(520,8), wxDefaultSize, 0, _T("ID_STATICTEXT2"));
     MailButton = new wxButton(this, ID_BUTTON4, _("Mail Results"), wxPoint(576,440), wxSize(104,24), 0, wxDefaultValidator, _T("ID_BUTTON4"));
@@ -291,6 +292,7 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
     ChangesOnly = new wxCheckBox(this, ID_CHECKBOX3, _("New Data Only"), wxPoint(176,440), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
     ChangesOnly->SetValue(false);
     SeeButton = new wxButton(this, ID_BUTTON5, _("See Results"), wxPoint(576,464), wxSize(104,24), 0, wxDefaultValidator, _T("ID_BUTTON5"));
+    Stop = new wxButton(this, ID_BUTTON6, _("S"), wxPoint(552,440), wxSize(24,48), 0, wxDefaultValidator, _T("ID_BUTTON6"));
     MenuBar1 = new wxMenuBar();
     Menu1 = new wxMenu();
     MenuItem1 = new wxMenuItem(Menu1, idMenuQuit, _("Quit\tAlt-F4"), _("Quit the application"), wxITEM_NORMAL);
@@ -313,6 +315,7 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_BUTTON3,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnSearchButtonClick);
     Connect(ID_BUTTON4,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnMailButtonClick);
     Connect(ID_BUTTON5,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnSeeButtonClick);
+    Connect(ID_BUTTON6,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&WebSniperFrame::OnStopClick);
     Connect(idMenuQuit,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&WebSniperFrame::OnQuit);
     Connect(idMenuAbout,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&WebSniperFrame::OnAbout);
     //*)
@@ -325,6 +328,7 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
 
     Connect(ID_TEXTCTRL3, wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( WebSniperFrame::OnSearchButtonClick ) );
     LoadSources();
+    StopEnabled=0;
 }
 
 WebSniperFrame::~WebSniperFrame()
@@ -432,6 +436,7 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
 
 void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
 {
+    StopEnabled = 0;
     wxString state,keyword_hit;
     state.Clear() , state.Printf(wxT("Starting a new search on the internet..!\n"));
     Output->AppendText(state);
@@ -459,6 +464,21 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
         return;
     }
 
+    if ( ChangesOnly->IsChecked() )
+    {
+        #if defined(__WXMSW__)
+        state.Clear();
+        state<<wxT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+        state<<wxT("Due to no capability of using diff in Windows\n");
+        state<<wxT("Please uncheck the selection New Data Only\n");
+        state<<wxT(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+        Output->AppendText(state);
+        return;
+        #elif defined(__UNIX__)
+
+        #endif
+    }
+
     int live_websites = 1;
     if ( !DownloadEnabled->IsChecked() ) live_websites=0;
 
@@ -478,6 +498,8 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
     ProgressBar->SetRange(CountSources-1);
     for ( int i=0; i<CountSources; i++ )
     {
+      if ( StopEnabled == 1 ) { MessageCstr("Terminating Search!\n"); break;}
+
       fprintf(stderr,"Going for site %u \n",i);
       state.Clear();
       state << wxT(" `") , state << Sources->GetString(i) , state << wxT("` ");
@@ -622,3 +644,7 @@ void WebSniperFrame::OnRemWebsiteClick(wxCommandEvent& event)
 }
 
 
+
+void WebSniperFrame::OnStopClick(wxCommandEvent& event)
+{
+}
