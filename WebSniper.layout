@@ -8,7 +8,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="HTMLAnalyzer.cpp" open="1" top="0" tabpos="3">
-		<Cursor position="550" topLine="0" />
+		<Cursor position="2008" topLine="0" />
 	</File>
 	<File name="HTMLAnalyzer.h" open="1" top="0" tabpos="4">
 		<Cursor position="58" topLine="0" />
@@ -20,9 +20,9 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="WebSniperMain.cpp" open="1" top="1" tabpos="1">
-		<Cursor position="14067" topLine="385" />
+		<Cursor position="1140" topLine="0" />
 	</File>
 	<File name="WebSniperMain.h" open="1" top="0" tabpos="2">
-		<Cursor position="3156" topLine="0" />
+		<Cursor position="1056" topLine="42" />
 	</File>
 </CodeBlocks_layout_file>

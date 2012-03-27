@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=WebSniper
+GenericName=WebSniper
+Icon=websnipericon.png
+Exec=WebSniper
+Terminal=false
+StartupNotify=false
+Categories=Application;Network;SearchEngine;

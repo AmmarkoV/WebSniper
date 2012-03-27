@@ -33,8 +33,8 @@ class WebSniperFrame: public wxFrame
         void PlaySound(wxString sndname);
         void MyCopyFile(wxString from,wxString to);
         void ReplaceDownloadedWithDiff(wxString oldfile,wxString newfile);
+        void CreateHomeFolderWithFiles();
     private:
-
         //(*Handlers(WebSniperFrame)
         void OnQuit(wxCommandEvent& event);
         void OnAbout(wxCommandEvent& event);

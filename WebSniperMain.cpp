@@ -17,14 +17,34 @@
 #include "InputParser/InputParser.h"
 #include "AFScripts/AFScripts.h"
 #include "GenerateReport.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <wx/html/htmlwin.h>
 #include <wx/sizer.h>
 #include <wx/dialog.h>
+#include <wx/stdpaths.h>
+#include <wx/filefn.h>
 
 //(*InternalHeaders(WebSniperFrame)
 #include <wx/string.h>
 #include <wx/intl.h>
 //*)
+
+const unsigned int MAX_STR=1024;
+
+wxString directory;
+char directory_str[MAX_STR]={0};
+char sources_str[MAX_STR]={0};
+char keywords_str_contents[MAX_STR]={0};
+char keywords_str[MAX_STR]={0};
+
+char raw_directory[MAX_STR]={0};
+char sound_directory[MAX_STR]={0};
+char report_filename_str[MAX_STR]={0};
+char directory_seperator[2]={'/'};
+
 
 //helper functions
 enum wxbuildinfoformat {
@@ -97,6 +117,140 @@ inline wxString _U(const char String[] = "")
 }
 
 
+int FileExists(const char *fname)
+{
+    FILE *file= fopen(fname, "r");
+    if (file!=0)
+    {
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
+int FileCreate(const char *fname)
+{
+    if (FileExists(fname)) { return 1; }
+    fprintf(stderr,"FileCreate(%s)\n",fname);
+    FILE *file= fopen(fname, "w");
+    if (file!=0)
+    {
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
+
+int DirCreate(const char *fnamestr)
+{
+      wxString fnamewxstr;
+      fnamewxstr<<_U(fnamestr);
+      fnamewxstr<<_U(directory_seperator);//wxT("/");
+
+      wxFileName fname(fnamewxstr);
+      if (fname.DirExists())
+        {
+          fprintf(stderr," Directory %s Exists! ..!\n",fnamestr);
+         } else
+         {
+           fprintf(stderr," Creating directory %s ..!\n",fnamestr);
+           wxMkdir(_U(fnamestr),0777);
+           return 1;
+         }
+   return  0;
+}
+
+int ReadAString(char * fname,char *str,unsigned int strlength)
+{
+    FILE *file= fopen(fname, "r");
+    if (file!=0)
+    {
+        char * result = fgets(str,strlength,file);
+        fclose(file);
+        if (result==0) { return 0; } else
+        if ( (strlen(str)>0) && ( str[strlen(str)-1]<=13) )
+         {
+            str[strlen(str)-1]=0;
+         }
+
+        return 1;
+    }
+    return 0;
+}
+
+int WriteAString(char * fname,char *str,unsigned int strlength)
+{
+    FILE *file= fopen(fname, "w");
+    if (file!=0)
+    {
+        fwrite (str,1,strlength,file);
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
+void WebSniperFrame::CreateHomeFolderWithFiles()
+{
+    directory.clear();
+    directory<< wxStandardPaths::Get().GetUserDataDir();
+    strcpy(directory_seperator,"/");
+/*
+      int linux_dir=1;
+      #if defined(__WXMSW__)
+        linux_dir=0;
+      #elif defined(__UNIX__)
+        linux_dir=1;
+      #endif
+
+
+      char directory_seperator='/';
+      if (linux_dir)
+       {
+         strcpy(directory_seperator,"/");
+        //directory<<wxT("/.websniper");
+       } else
+       {
+        strcpy(directory_seperator,"\\");
+        //directory<<wxT("\\WebSniper");
+       }
+*/
+
+      strncpy(directory_str,(const char*) directory.mb_str(wxConvUTF8),MAX_STR);
+      DirCreate(directory_str);
+
+      strncpy(raw_directory,directory_str,MAX_STR);
+      strcat(raw_directory,directory_seperator);
+      strcat(raw_directory,"raw");
+      DirCreate(raw_directory);
+
+
+
+
+    if (FileExists("/usr/share/websniper/Sounds/shot.wav")) {  strcpy(sound_directory,"/usr/share/websniper/Sounds/"); } else
+                                                            {  strcpy(sound_directory,"Sounds/"); }
+
+
+
+    strncpy(sources_str,directory_str,MAX_STR);
+    strcat(sources_str,directory_seperator);
+    strncat(sources_str,"sources.ini",MAX_STR);
+    FileCreate(sources_str);
+
+    strncpy(keywords_str,directory_str,MAX_STR);
+    strcat(keywords_str,directory_seperator);
+    strncat(keywords_str,"keywords.ini",MAX_STR);
+    FileCreate(keywords_str);
+
+    strncpy(report_filename_str,directory_str,MAX_STR);
+    strcat(report_filename_str,directory_seperator);
+    strncat(report_filename_str,"report.html",MAX_STR);
+
+
+
+
+}
 
 void WebSniperFrame::MessageCstr(char * msg)
 {
@@ -114,7 +268,7 @@ void  WebSniperFrame::PlaySound(wxString sndname)
 
   wxString fullcmd;  fullcmd.Clear();
   wxString fileused;  fileused.Clear();
-  fileused<<wxT("Sounds/");
+  fileused<<_U(sound_directory);//wxT("Sounds/");
   fileused<<sndname;
   int linux_sound;
 
@@ -214,7 +368,7 @@ void WebSniperFrame::MyCopyFile(wxString from,wxString to)
 
      if ( _C_FileCopy(frompath,topath)!= 1 )
       {
-         MessageCstr("Error Copying File!\n");
+         MessageCstr((char*)"Error Copying File!\n");
       }
   }
 }
@@ -327,6 +481,10 @@ WebSniperFrame::WebSniperFrame(wxWindow* parent,wxWindowID id)
       #endif
 
     Connect(ID_TEXTCTRL3, wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( WebSniperFrame::OnSearchButtonClick ) );
+
+    CreateHomeFolderWithFiles();
+
+
     LoadSources();
     StopEnabled=0;
 }
@@ -340,6 +498,11 @@ WebSniperFrame::~WebSniperFrame()
 
 void WebSniperFrame::LoadSources()
 {
+
+    ReadAString(keywords_str,keywords_str_contents,MAX_STR);
+    SearchTerms->SetValue(_U(keywords_str_contents));
+
+
     wxString state;
 
     fprintf(stderr,"Starting Source read \n");
@@ -347,7 +510,7 @@ void WebSniperFrame::LoadSources()
 
     state.Clear();
 
-    if ( StartParsingFile (&aro ,"sources.ini\0") )
+    if ( StartParsingFile (&aro ,sources_str) )
     {
        char  line[1024]={0};
        unsigned int linelen=1024;
@@ -403,7 +566,7 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
     wxURL *http=0;
     http = new wxURL(sitename);
     http->GetProtocol().SetTimeout(20);
-   if ( http == 0 ) { MessageCstr("Error Creating URL downloader \n"); }
+   if ( http == 0 ) { MessageCstr((char*)"Error Creating URL downloader \n"); }
      else
    if (http->GetError() == wxURL_NOERR)
   {
@@ -429,7 +592,7 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
     delete in;
   } else
   {
-    MessageCstr("Site could not be opened!\n");
+    MessageCstr((char*)"Site could not be opened!\n");
   }
   delete http;
 }
@@ -481,10 +644,13 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
         #endif
     }
 
+    strncpy(keywords_str_contents,sterm.mb_str(wxConvUTF8),1024);
+    WriteAString(keywords_str,keywords_str_contents,1024);
+
     int live_websites = 1;
     if ( !DownloadEnabled->IsChecked() ) live_websites=0;
 
-    WriteReportHeader("Reports/report.html",live_websites,sterm_count,sterm.mb_str(wxConvUTF8),CountSources,Sources);
+    WriteReportHeader(report_filename_str,live_websites,sterm_count,sterm.mb_str(wxConvUTF8),CountSources,Sources);
 
 
     wxString rawfile;
@@ -498,27 +664,28 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
     HTMLAnalyzer * site=0;
 
     ProgressBar->SetRange(CountSources-1);
-    for ( int i=0; i<CountSources; i++ )
+    unsigned int i=0;
+    for (i=0; i<CountSources; i++ )
     {
-      if ( StopEnabled == 1 ) { MessageCstr("Terminating Search!\n"); break;}
+      if ( StopEnabled == 1 ) { MessageCstr((char*)"Terminating Search!\n"); break;}
 
       fprintf(stderr,"Going for site %u \n",i);
       state.Clear();
       state << wxT(" `") , state << Sources->GetString(i) , state << wxT("` ");
 
-      rawfile.Clear() , rawfile<<wxT("raw/_rawfile") , rawfile<<i;
+      rawfile.Clear() , rawfile<<_U(raw_directory); rawfile<<wxT("/_rawfile") , rawfile<<i;
       curr_rawfile.Clear() , curr_rawfile<<rawfile , curr_rawfile<<wxT(".current");
 
       last_rawfile.Clear() , last_rawfile << rawfile , last_rawfile << wxT(".last");
       cleanrawfile.Clear() , cleanrawfile << rawfile , cleanrawfile << wxT(".clean");
 
-      fprintf(stderr,"Copying File\n",i);
+      fprintf(stderr,"Copying File %u\n",i);
       MyCopyFile(curr_rawfile,last_rawfile);
-      fprintf(stderr,"Downloading Site\n",i);
+      fprintf(stderr,"Downloading Site %u\n",i);
       DownloadSite(Sources->GetString(i),rawfile);
-      fprintf(stderr,"Copying File\n",i);
+      fprintf(stderr,"Copying File %u\n",i);
       MyCopyFile(rawfile,curr_rawfile);
-      if ( ChangesOnly->IsChecked() ) {  fprintf(stderr,"ReplaceDownloadedWithDiff\n",i);
+      if ( ChangesOnly->IsChecked() ) {  fprintf(stderr,"ReplaceDownloadedWithDiff %u\n",i);
                                           ReplaceDownloadedWithDiff(last_rawfile,rawfile);  }
 
       state << wxT(" stored to ") , state << rawfile , state << wxT(" \n");
@@ -603,7 +770,7 @@ void WebSniperFrame::OnMailButtonClick(wxCommandEvent& event)
 void WebSniperFrame::OnSeeButtonClick(wxCommandEvent& event)
 {
 
-  if ( FileExists(wxT("Reports/report.html") ) )
+  if ( FileExists(report_filename_str) )
   {
 
     wxBoxSizer* topsizer;
@@ -612,7 +779,7 @@ void WebSniperFrame::OnSeeButtonClick(wxCommandEvent& event)
     topsizer = new wxBoxSizer(wxVERTICAL);
 
     html = new wxHtmlWindow(&dlg,wxID_ANY,wxDefaultPosition,wxSize(600,400),wxHW_SCROLLBAR_AUTO );
-    html ->LoadPage(wxT("Reports/report.html"));
+    html ->LoadPage(_U(report_filename_str));
     html ->SetSize(590,390);
     topsizer->Add(html,1,wxALL,10);
     wxButton *but = new wxButton(&dlg,wxID_OK,wxT("OK"));
