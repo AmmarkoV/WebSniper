@@ -2,19 +2,19 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
 	<File name="GenerateReport.cpp" open="1" top="0" tabpos="5">
-		<Cursor position="1442" topLine="54" />
+		<Cursor position="572" topLine="54" />
 	</File>
 	<File name="GenerateReport.h" open="1" top="0" tabpos="6">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="HTMLAnalyzer.cpp" open="1" top="0" tabpos="3">
-		<Cursor position="612" topLine="0" />
+		<Cursor position="612" topLine="33" />
 	</File>
 	<File name="HTMLAnalyzer.h" open="1" top="0" tabpos="4">
 		<Cursor position="550" topLine="0" />
 	</File>
 	<File name="WebSniperMain.cpp" open="1" top="1" tabpos="1">
-		<Cursor position="14605" topLine="447" />
+		<Cursor position="3887" topLine="142" />
 	</File>
 	<File name="WebSniperMain.h" open="1" top="0" tabpos="2">
 		<Cursor position="3156" topLine="62" />

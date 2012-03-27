@@ -14,8 +14,8 @@
 #include <wx/sound.h>
 #include <wx/settings.h>
 #include "HTMLAnalyzer.h"
-#include "../InputParser/InputParser.h"
-#include "../AFScripts/AFScripts.h"
+#include "InputParser/InputParser.h"
+#include "AFScripts/AFScripts.h"
 #include "GenerateReport.h"
 #include <wx/html/htmlwin.h>
 #include <wx/sizer.h>

@@ -2,7 +2,7 @@
 #define HTMLANALYZER_H
 
 
-#include "../TextAnalyzer/TextAnalyzer.h"
+#include "TextAnalyzer/TextAnalyzer.h"
 #include <stdio.h>
 #include <stdlib.h>
 

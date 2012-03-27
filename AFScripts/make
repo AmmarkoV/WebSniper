@@ -1,0 +1,15 @@
+#!/bin/bash
+echo "Hand made make script for AFScripts .."
+echo "Should provide libAFScripts.a"
+echo "Written by Ammar Qammaz a.k.a AmmarkoV :) "
+echo "Compiling files.." 
+gcc -c AFScripts.c -o AFScripts.o 
+
+echo "Linking files.."
+ar  rcs libAFScripts.a AFScripts.o 
+
+echo "Cleaning compiled object files.."
+rm AFScripts.o 
+ 
+echo "Done.."
+exit 0

@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "Hand made make script for AFScripts .."
+echo "Should provide libAFScripts.a"
+echo "Written by Ammar Qammaz a.k.a AmmarkoV :) "
+echo "Compiling files.." 
+gcc -c TextAnalyzer.cpp -o TextAnalyzer.o 
+gcc -c WordCollection.cpp -o WordCollection.o 
+gcc -c HashFunctions.c -o HashFunctions.o 
+
+echo "Linking files.."
+ar  rcs libTextAnalyzer.a TextAnalyzer.o WordCollection.o HashFunctions.o 
+
+echo "Cleaning compiled object files.."
+rm TextAnalyzer.o WordCollection.o HashFunctions.o 
+ 
+echo "Done.."
+exit 0
