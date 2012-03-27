@@ -21,7 +21,7 @@ HTMLAnalyzer::HTMLAnalyzer(unsigned char * file,unsigned char * file2)
   rewind (pFile);
   // allocate memory to contain the whole file:
   buffer = (char*) malloc (sizeof(char)*lSize);
-  if (buffer == NULL) {fputs ("HTMLAnalyzer error allocating memory \n",stderr); failed_instance = true;  fclose (pFile); pFile=0; return;}
+  if (buffer == 0 ) {fputs ("HTMLAnalyzer error allocating memory \n",stderr); failed_instance = true;  fclose (pFile); pFile=0; return;}
   // copy the file into the buffer:
   result = fread (buffer,1,lSize,pFile);
   fclose (pFile);
@@ -47,12 +47,11 @@ void HTMLAnalyzer::CleanHTMLTags(char * filenameclean)
    unsigned int sizeofbuffer=lSize;
    ClearTextFromHTMLTags(html_words,buffer,sizeofbuffer);
 
-   FILE *fp_dbg;
+   FILE *fp_dbg=0;
    fp_dbg = fopen ( (const char * ) filenameclean , "wb" );
-   if (fp_dbg==NULL) {  return; }
+   if (fp_dbg==0) {  return; }
    fwrite (buffer,1,sizeofbuffer,fp_dbg);
    fclose (fp_dbg);
-   fp_dbg=0;
 }
 
 unsigned int HTMLAnalyzer::WordOccurances(unsigned char * str , unsigned short length)
@@ -63,6 +62,7 @@ unsigned int HTMLAnalyzer::WordOccurances(unsigned char * str , unsigned short l
 
 HTMLAnalyzer::~HTMLAnalyzer()
 {
+  fprintf(stderr,"Destroying HTMLAnalyzer Object\n");
   TextAnalyzer_DeleteWordCollection(html_words);
   fprintf(stderr,"Survived Delete Word Collection\n");
   if ( buffer!= 0 )  free (buffer);

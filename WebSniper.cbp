@@ -57,9 +57,9 @@
 				</ResourceCompiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="../TextAnalyzer/libTextAnalyzer.a" />
-					<Add library="../InputParser/libInputParser.a" />
-					<Add library="../AFScripts/libAFScripts.a" />
+					<Add library="TextAnalyzer/libTextAnalyzer.a" />
+					<Add library="InputParser/libInputParser.a" />
+					<Add library="AFScripts/libAFScripts.a" />
 					<Add library="libkernel32.a" />
 					<Add library="libuser32.a" />
 					<Add library="libgdi32.a" />
@@ -105,9 +105,9 @@
 				</ResourceCompiler>
 				<Linker>
 					<Add option="-s" />
-					<Add library="../TextAnalyzer/libTextAnalyzer.a" />
-					<Add library="../InputParser/libInputParser.a" />
-					<Add library="../AFScripts/libAFScripts.a" />
+					<Add library="TextAnalyzer/libTextAnalyzer.a" />
+					<Add library="InputParser/libInputParser.a" />
+					<Add library="AFScripts/libAFScripts.a" />
 					<Add library="libkernel32.a" />
 					<Add library="libuser32.a" />
 					<Add library="libgdi32.a" />
@@ -132,9 +132,9 @@
 		</Compiler>
 		<Linker>
 			<Add option="`wx-config --libs`" />
-			<Add library="../TextAnalyzer/libTextAnalyzer.a" />
-			<Add library="../InputParser/libInputParser.a" />
-			<Add library="../AFScripts/libAFScripts.a" />
+			<Add library="TextAnalyzer/libTextAnalyzer.a" />
+			<Add library="InputParser/libInputParser.a" />
+			<Add library="AFScripts/libAFScripts.a" />
 		</Linker>
 		<Unit filename="GenerateReport.cpp" />
 		<Unit filename="GenerateReport.h" />

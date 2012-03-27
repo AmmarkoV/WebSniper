@@ -21,7 +21,10 @@ bool TextPointerError(char * text,unsigned int textsize)
 
 void TextAnalyzer_DeleteWordCollection(word_collection * acol)
 {
- DeleteWordCollection(acol);
+   fprintf(stderr,"Deleting TextAnalyzer Collection..\n");
+   DeleteWordCollection(acol);
+   fprintf(stderr,"Done..\n");
+
 }
 
 unsigned int TextAnalyzer_WordOccurances(word_collection * acol,unsigned char * theword , unsigned int wordsize)
@@ -52,23 +55,32 @@ unsigned int FindFirstInstanceOfChar(unsigned int ptr,char * text,char chartofin
 void ExtractWords(word_collection * acol,char * text,unsigned int &textsize)
 {
   printf("Extract Words called with input size %u \n",textsize);
-  if ( TextPointerError(text,textsize) ) { return; }
+  if ( TextPointerError(text,textsize) ) { fprintf(stderr,"Error With Text Pointer , while starting Extract Words\n"); return; }
   unsigned char found_word=0;
 
-  unsigned char * newword;
-  newword = new unsigned char [1024];
+  unsigned int MAX_INTERMIDIATE_BUFFER=2048;
+  unsigned char * newword=0;
+  newword = (unsigned char * ) malloc(MAX_INTERMIDIATE_BUFFER*sizeof(unsigned char));
+  if (newword==0) {fprintf(stderr,"Could not allocate space for new word..!\n"); return; }
   unsigned int act_ptr=0;
 
   for ( unsigned int i=0; i<textsize; i++)
   {
+    // SAFEGUARD
+    if (act_ptr>=MAX_INTERMIDIATE_BUFFER)
+    {
+      fprintf(stderr,"Reached max intermidiate buffer size (%u) , flushing it\n",MAX_INTERMIDIATE_BUFFER);
+      act_ptr=0;
+    }
+    // SAFEGUARD
+
     if ( ( text[i]==' ' ) || (text[i]=='|') )
     {
-
       if ( found_word == 1 ) { newword[act_ptr++]=0;
                                UpcaseIt(newword,act_ptr);
-                               if ( IgnoreWord(newword , act_ptr ) == false )
+                               if ( IgnoreWord(newword , act_ptr ) == 0 )
                                {
-                                // printf("%s \n",newword);
+                                 printf("%s \n",newword);
                                  AddWord2Collection(acol,newword,act_ptr);
                                }
                              }
@@ -82,7 +94,7 @@ void ExtractWords(word_collection * acol,char * text,unsigned int &textsize)
 
   }
 
-  delete newword;
+  free(newword);
 }
 
 

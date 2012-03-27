@@ -1,8 +1,8 @@
 #ifndef WORDCOLLECTION_H_INCLUDED
 #define WORDCOLLECTION_H_INCLUDED
 
-const int SANITY_BYTES_CHECK = 6661230;
-const int START_WORD_MEMORY_CAPACITY = 3000;
+const unsigned int SANITY_BYTES_CHECK = 6661230;
+const unsigned int START_WORD_MEMORY_CAPACITY = 63000;
 
 struct word
 {
@@ -24,17 +24,17 @@ struct word_collection
 };
 
 // HELPER FUNCTIONS
-bool IgnoreWord(unsigned char * theword , unsigned int wordsize );
+unsigned char IgnoreWord(unsigned char * theword , unsigned int wordsize );
 void UpcaseIt(unsigned char * text,unsigned int textsize); //Metatrepei String se Upcase
 // HELPER FUNCTIONS
 
 
 // CONSTRUCTORS / DESTRUCTORS
 struct word_collection * NewWordCollection();
-bool DeleteWordCollection(struct word_collection * acol);
+unsigned char DeleteWordCollection(struct word_collection * acol);
 
 // FUNCTIONS!
-bool AddWord2Collection( word_collection * acol,unsigned char * word,unsigned short length);
+unsigned char AddWord2Collection( word_collection * acol,unsigned char * word,unsigned short length);
 unsigned int GetWordOccurances(word_collection * acol,unsigned char * word,unsigned short length);
 
 

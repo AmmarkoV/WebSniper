@@ -158,7 +158,7 @@ int _C_FileCopy(char * frompath,char * topath)
     rewind (pFile);
    // allocate memory to contain the whole file:
    buffer = (char*) malloc (sizeof(char)*lSize);
-   if (buffer == 0 ) { return 0; }
+   if (buffer == 0 ) { fclose (pFile); return 0; }
 
    result = fread (buffer,1,lSize,pFile);
    fclose (pFile);
@@ -191,7 +191,7 @@ void WebSniperFrame::MyCopyFile(wxString from,wxString to)
   #endif
 
   // ACTIVATE INLINE FILE COPYING ( NO CONSOLE WINDOW IN WINDOWS :P )
-  linux_syntax=2;
+  //linux_syntax=2;
 
   if ( linux_syntax == 1 )
   {
@@ -402,12 +402,14 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
 
     wxURL *http=0;
     http = new wxURL(sitename);
+    http->GetProtocol().SetTimeout(20);
    if ( http == 0 ) { MessageCstr("Error Creating URL downloader \n"); }
      else
    if (http->GetError() == wxURL_NOERR)
   {
-    fprintf(stderr,"Fetching Input Stream\n");
+    fprintf(stderr,"Fetching Input Stream ..");
     wxInputStream* in = http->GetInputStream();
+    fprintf(stderr,"got it\n");
 
     if ( in != 0 )
     {
