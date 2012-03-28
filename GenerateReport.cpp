@@ -1,5 +1,5 @@
 #include "GenerateReport.h"
-#include "../InputParser/InputParser.h"
+#include "InputParser/InputParser.h"
 #include <stdio.h>
 #include <stdlib.h>
 
