@@ -563,6 +563,19 @@ void WebSniperFrame::DownloadSite(wxString sitename,wxString filename)
        return;
      }
 
+    char sitename_str[1024]={0};
+    strncpy(sitename_str,sitename.mb_str(wxConvUTF8),1024);
+    fprintf(stderr,"DownloadingSite (%s)\n",sitename_str);
+    char * pch=0;
+    pch = strstr (sitename_str,"https:");
+    if (pch!=0)
+      {
+       state.clear(); state<<wxT("HTTPS websites cannot be resolved , skipping ") , state<<sitename , state<<wxT(" \n ");
+       Output->AppendText(state);
+       fprintf(stderr,"HTTPS websites cannot be resolved , skipping %s \n",sitename_str);
+       return ;
+    }
+
     wxURL *http=0;
     http = new wxURL(sitename);
     http->GetProtocol().SetTimeout(20);
@@ -750,6 +763,10 @@ void WebSniperFrame::OnSearchButtonClick(wxCommandEvent& event)
     site =0;
     ProgressBar->SetValue(i);
     }
+
+        state.Clear();
+        state<<wxT("Done..\n");
+        Output->AppendText(state);
 
     CloseReport();
     PlaySound(wxT("pop.wav"));
