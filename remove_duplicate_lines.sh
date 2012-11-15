@@ -1,3 +1,3 @@
 #!/bin/bash
-sort sources.ini | uniq  > sources_2.ini
+sort sources_unfiltered.ini | uniq  > sources.ini
 exit 0
