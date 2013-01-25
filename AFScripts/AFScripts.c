@@ -33,7 +33,7 @@ unsigned char GetNextLineFile(struct AFSContext * afs ,char * line,unsigned int 
 {
     if (!AFSContextOK(afs)) { return 0; }
     if ( afs->fp != 0 ) {
-                          unsigned char retres = (fgets(line,linelen,afs->fp)!=0);
+                          unsigned int retres = (fgets(line,linelen,afs->fp)!=0);
                           if ( retres != 0 )
                           {
                            unsigned int len = strlen ( line );
